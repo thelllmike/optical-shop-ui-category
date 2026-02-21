@@ -1,0 +1,32 @@
+/**
+ * Optical Shop UI – Admin Styles
+ */
+
+.osui-meta-table th {
+	width: 160px;
+	vertical-align: top;
+	padding-top: 14px;
+}
+
+.osui-image-preview {
+	margin-bottom: 8px;
+}
+
+.osui-image-preview img {
+	border: 1px solid #ddd;
+	border-radius: 4px;
+	padding: 2px;
+	background: #fafafa;
+}
+
+.osui-media-field .button {
+	margin-right: 6px;
+}
+
+/* Toggle video/image fields based on type selection */
+.osui-field-video {
+	display: none;
+}
+.osui-show-video .osui-field-video {
+	display: table-row;
+}
