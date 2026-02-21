@@ -76,10 +76,13 @@ add_shortcode( 'optical_trending', 'osui_shortcode_trending' );
  * Render the trending cards row.
  */
 function osui_shortcode_trending( $atts ) {
+	// Default brand comes from the admin setting, not hardcoded.
+	$saved_brand = function_exists( 'osui_get_brand_name' ) ? osui_get_brand_name() : 'Lenskart';
+
 	$atts = shortcode_atts(
 		array(
 			'group' => 'eyeglasses',
-			'brand' => 'Lenskart',
+			'brand' => $saved_brand,
 		),
 		$atts,
 		'optical_trending'
@@ -103,39 +106,42 @@ function osui_shortcode_trending( $atts ) {
 	?>
 	<section class="osui-trending osui-trending--<?php echo esc_attr( $group ); ?>">
 		<h2 class="osui-trending__heading"><?php echo esc_html( $heading ); ?></h2>
-		<div class="osui-trending__row">
-			<?php foreach ( $items as $card ) : ?>
-				<a href="<?php echo esc_url( $card['url'] ); ?>" class="osui-trending__card osui-trending__card--<?php echo esc_attr( $card['type'] ); ?>" data-card-type="<?php echo esc_attr( $card['type'] ); ?>">
+		<div class="osui-trending__slider">
+			<button type="button" class="osui-trending__arrow osui-trending__arrow--prev" aria-label="<?php esc_attr_e( 'Previous', 'optical-shop-ui' ); ?>">&#10094;</button>
+			<div class="osui-trending__row">
+				<?php foreach ( $items as $card ) : ?>
+					<a href="<?php echo esc_url( $card['url'] ); ?>" class="osui-trending__card osui-trending__card--<?php echo esc_attr( $card['type'] ); ?>" data-card-type="<?php echo esc_attr( $card['type'] ); ?>">
 
-					<?php if ( 'video' === $card['type'] && $card['video'] ) : ?>
-						<!-- Video card -->
-						<video
-							class="osui-trending__video"
-							src="<?php echo esc_url( $card['video'] ); ?>"
-							<?php if ( $card['poster'] ) : ?>poster="<?php echo esc_url( $card['poster'] ); ?>"<?php endif; ?>
-							muted
-							playsinline
-							loop
-							preload="metadata"
-						></video>
-					<?php else : ?>
-						<!-- Image card -->
-						<?php if ( $card['image'] ) : ?>
-							<img class="osui-trending__img" src="<?php echo esc_url( $card['image'] ); ?>" alt="<?php echo esc_attr( $card['title'] ); ?>" loading="lazy" />
+						<?php if ( 'video' === $card['type'] && $card['video'] ) : ?>
+							<!-- Video card -->
+							<video
+								class="osui-trending__video"
+								src="<?php echo esc_url( $card['video'] ); ?>"
+								<?php if ( $card['poster'] ) : ?>poster="<?php echo esc_url( $card['poster'] ); ?>"<?php endif; ?>
+								muted
+								playsinline
+								preload="metadata"
+							></video>
+						<?php else : ?>
+							<!-- Image card -->
+							<?php if ( $card['image'] ) : ?>
+								<img class="osui-trending__img" src="<?php echo esc_url( $card['image'] ); ?>" alt="<?php echo esc_attr( $card['title'] ); ?>" loading="lazy" />
+							<?php endif; ?>
 						<?php endif; ?>
-					<?php endif; ?>
 
-					<span class="osui-trending__overlay">
-						<?php if ( $card['title'] ) : ?>
-							<span class="osui-trending__title"><?php echo esc_html( $card['title'] ); ?></span>
-						<?php endif; ?>
-						<?php if ( $card['subtitle'] ) : ?>
-							<span class="osui-trending__subtitle"><?php echo esc_html( $card['subtitle'] ); ?></span>
-						<?php endif; ?>
-						<span class="osui-trending__cta"><?php echo esc_html( $card['cta'] ); ?> &#9654;</span>
-					</span>
-				</a>
-			<?php endforeach; ?>
+						<span class="osui-trending__overlay">
+							<?php if ( $card['title'] ) : ?>
+								<span class="osui-trending__title"><?php echo esc_html( $card['title'] ); ?></span>
+							<?php endif; ?>
+							<?php if ( $card['subtitle'] ) : ?>
+								<span class="osui-trending__subtitle"><?php echo esc_html( $card['subtitle'] ); ?></span>
+							<?php endif; ?>
+							<span class="osui-trending__cta"><?php echo esc_html( $card['cta'] ); ?> &#9654;</span>
+						</span>
+					</a>
+				<?php endforeach; ?>
+			</div>
+			<button type="button" class="osui-trending__arrow osui-trending__arrow--next" aria-label="<?php esc_attr_e( 'Next', 'optical-shop-ui' ); ?>">&#10095;</button>
 		</div>
 	</section>
 	<?php
@@ -179,7 +185,7 @@ function osui_register_blocks() {
 			),
 			'brand' => array(
 				'type'    => 'string',
-				'default' => 'Lenskart',
+				'default' => '',
 			),
 		),
 		'render_callback' => 'osui_block_render_trending',

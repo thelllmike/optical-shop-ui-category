@@ -38,3 +38,6 @@ $trending = get_posts(
 foreach ( $trending as $id ) {
 	wp_delete_post( $id, true );
 }
+
+// Delete plugin options.
+delete_option( 'osui_brand_name' );

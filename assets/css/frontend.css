@@ -83,7 +83,7 @@
 }
 
 /* ──────────────────────────────────────────────────────────────
-   TRENDING CARDS
+   TRENDING CARDS – SLIDER
    ────────────────────────────────────────────────────────────── */
 .osui-trending__heading {
 	font-size: 1.25rem;
@@ -92,31 +92,35 @@
 	margin: 0 0 20px;
 }
 
+/* Slider wrapper (arrows + viewport) */
+.osui-trending__slider {
+	position: relative;
+}
+
+/* Scrollable viewport */
 .osui-trending__row {
 	display: flex;
 	gap: 16px;
 	overflow-x: auto;
+	overflow-y: hidden;
 	scroll-snap-type: x mandatory;
+	scroll-behavior: smooth;
 	-webkit-overflow-scrolling: touch;
-	scrollbar-width: thin;
-	padding-bottom: 8px;
+	scrollbar-width: none; /* Firefox */
+	padding-bottom: 4px;
 }
 
-/* Hide scrollbar on webkit */
 .osui-trending__row::-webkit-scrollbar {
-	height: 4px;
-}
-.osui-trending__row::-webkit-scrollbar-thumb {
-	background: #ccc;
-	border-radius: 4px;
+	display: none; /* Chrome/Safari – hide scrollbar, rely on arrows */
 }
 
+/* Individual card – show 4 per row on desktop with gaps accounted for */
 .osui-trending__card {
 	position: relative;
 	display: block;
-	flex: 0 0 auto;
-	width: 280px;
-	height: 380px;
+	flex: 0 0 calc(25% - 12px); /* 4 cards with 3 gaps of 16px: (3*16)/4 = 12 */
+	height: 0;
+	padding-bottom: calc((25% - 12px) * 1.35); /* ~2:3 aspect ratio */
 	border-radius: 16px;
 	overflow: hidden;
 	text-decoration: none;
@@ -148,22 +152,23 @@
 	gap: 2px;
 	background: linear-gradient(to top, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0) 100%);
 	pointer-events: none;
+	z-index: 2;
 }
 
 .osui-trending__title {
-	font-size: 1rem;
+	font-size: 1.05rem;
 	font-weight: 700;
 	line-height: 1.3;
 	text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
 }
 
 .osui-trending__subtitle {
-	font-size: 0.8rem;
+	font-size: 0.82rem;
 	opacity: 0.85;
 }
 
 .osui-trending__cta {
-	font-size: 0.85rem;
+	font-size: 0.88rem;
 	font-weight: 600;
 	margin-top: 4px;
 	display: inline-flex;
@@ -171,11 +176,58 @@
 	gap: 4px;
 }
 
+/* ── Slider arrows ───────────────────────────────────────────── */
+.osui-trending__arrow {
+	display: none; /* hidden by default, shown via JS when > 4 cards */
+	position: absolute;
+	top: 50%;
+	transform: translateY(-50%);
+	z-index: 10;
+	width: 44px;
+	height: 44px;
+	border-radius: 50%;
+	border: none;
+	background: rgba(255, 255, 255, 0.92);
+	box-shadow: 0 2px 10px rgba(0, 0, 0, 0.18);
+	cursor: pointer;
+	font-size: 20px;
+	line-height: 1;
+	color: #1a1a4e;
+	transition: background 0.2s, box-shadow 0.2s;
+	align-items: center;
+	justify-content: center;
+}
+
+.osui-trending__arrow:hover {
+	background: #fff;
+	box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+}
+
+.osui-trending__arrow--prev {
+	left: -8px;
+}
+
+.osui-trending__arrow--next {
+	right: -8px;
+}
+
+/* Show arrows when slider is active (JS adds this class) */
+.osui-trending__slider--has-overflow .osui-trending__arrow {
+	display: flex;
+}
+
+/* Hide disabled arrow */
+.osui-trending__arrow[disabled] {
+	opacity: 0.3;
+	cursor: default;
+	pointer-events: none;
+}
+
 /* ──────────────────────────────────────────────────────────────
    RESPONSIVE
    ────────────────────────────────────────────────────────────── */
 
-/* Desktop: larger tiles, cards fill available space */
+/* Desktop ≥ 768px: show 4 cards, larger shapes */
 @media (min-width: 768px) {
 	.osui-shapes__grid {
 		gap: 28px;
@@ -189,20 +241,9 @@
 		width: 140px;
 		height: 140px;
 	}
-
-	.osui-trending__card {
-		flex: 1 1 0;
-		min-width: 220px;
-		max-width: 320px;
-	}
-
-	.osui-trending__row {
-		overflow-x: visible;
-		flex-wrap: nowrap;
-	}
 }
 
-/* Large desktop */
+/* Large desktop ≥ 1024px */
 @media (min-width: 1024px) {
 	.osui-shapes__circle {
 		width: 160px;
@@ -213,12 +254,42 @@
 		width: 170px;
 	}
 
-	.osui-trending__card {
-		height: 420px;
+	.osui-trending__slider {
+		padding: 0 24px; /* room for arrows */
+	}
+
+	.osui-trending__arrow--prev {
+		left: -12px;
+	}
+
+	.osui-trending__arrow--next {
+		right: -12px;
 	}
 }
 
-/* Small mobile */
+/* Tablet 768–1023: show 3 cards */
+@media (min-width: 768px) and (max-width: 1023px) {
+	.osui-trending__card {
+		flex: 0 0 calc(33.333% - 11px);
+		padding-bottom: calc((33.333% - 11px) * 1.35);
+	}
+}
+
+/* Mobile < 768px: show ~1.3 cards (scroll-snap) */
+@media (max-width: 767px) {
+	.osui-trending__card {
+		flex: 0 0 75vw;
+		height: 0;
+		padding-bottom: calc(75vw * 1.35);
+	}
+
+	/* No arrows on mobile – swipe to navigate */
+	.osui-trending__arrow {
+		display: none !important;
+	}
+}
+
+/* Small mobile ≤ 480px */
 @media (max-width: 480px) {
 	.osui-shapes__grid {
 		gap: 12px;
@@ -239,7 +310,7 @@
 	}
 
 	.osui-trending__card {
-		width: 240px;
-		height: 340px;
+		flex: 0 0 80vw;
+		padding-bottom: calc(80vw * 1.35);
 	}
 }

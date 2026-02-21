@@ -69,7 +69,7 @@
 		description: 'Displays trending product cards with video hover-play for eyeglasses or sunglasses.',
 		attributes: {
 			group: { type: 'string', default: 'eyeglasses' },
-			brand: { type: 'string', default: 'Lenskart' },
+			brand: { type: 'string', default: '' },
 		},
 		edit: function ( props ) {
 			return el(
@@ -90,7 +90,7 @@
 							},
 						} ),
 						el( TextControl, {
-							label: 'Brand Name',
+							label: 'Brand Name (leave empty to use Dashboard setting)',
 							value: props.attributes.brand,
 							onChange: function ( val ) {
 								props.setAttributes( { brand: val } );

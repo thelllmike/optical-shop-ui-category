@@ -70,13 +70,90 @@ function osui_highlight_parent_menu( $parent_file ) {
 }
 
 /**
- * Dashboard / quick-start page.
+ * Register the brand name setting.
+ */
+add_action( 'admin_init', 'osui_register_settings' );
+
+function osui_register_settings() {
+	register_setting( 'osui_settings', 'osui_brand_name', array(
+		'type'              => 'string',
+		'sanitize_callback' => 'sanitize_text_field',
+		'default'           => 'Lenskart',
+	) );
+}
+
+/**
+ * Get the saved brand name (used by shortcodes as default).
+ */
+function osui_get_brand_name() {
+	return get_option( 'osui_brand_name', 'Lenskart' );
+}
+
+/**
+ * Dashboard / quick-start page with settings form.
  */
 function osui_dashboard_page() {
+	// Handle form save.
+	if ( isset( $_POST['osui_save_settings'] ) ) {
+		if ( ! isset( $_POST['osui_settings_nonce'] ) || ! wp_verify_nonce( $_POST['osui_settings_nonce'], 'osui_settings_save' ) ) {
+			wp_die( __( 'Security check failed.', 'optical-shop-ui' ) );
+		}
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_die( __( 'Unauthorized.', 'optical-shop-ui' ) );
+		}
+		$brand = sanitize_text_field( $_POST['osui_brand_name'] ?? 'Lenskart' );
+		update_option( 'osui_brand_name', $brand );
+		echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__( 'Settings saved.', 'optical-shop-ui' ) . '</p></div>';
+	}
+
+	$brand = osui_get_brand_name();
 	?>
 	<div class="wrap">
 		<h1><?php esc_html_e( 'Optical Shop UI', 'optical-shop-ui' ); ?></h1>
+
+		<!-- ── Brand Name Setting ──────────────────────────── -->
 		<div class="card" style="max-width:720px;">
+			<h2><?php esc_html_e( 'Brand Settings', 'optical-shop-ui' ); ?></h2>
+			<form method="post">
+				<?php wp_nonce_field( 'osui_settings_save', 'osui_settings_nonce' ); ?>
+				<table class="form-table">
+					<tr>
+						<th scope="row">
+							<label for="osui_brand_name"><?php esc_html_e( 'Brand Name', 'optical-shop-ui' ); ?></label>
+						</th>
+						<td>
+							<input type="text" name="osui_brand_name" id="osui_brand_name" value="<?php echo esc_attr( $brand ); ?>" class="regular-text" />
+							<p class="description"><?php esc_html_e( 'Shown in the heading: "#Trending at {Brand Name}". You can also override per-shortcode with brand="…".', 'optical-shop-ui' ); ?></p>
+						</td>
+					</tr>
+				</table>
+				<p class="submit">
+					<input type="submit" name="osui_save_settings" class="button-primary" value="<?php esc_attr_e( 'Save Brand Name', 'optical-shop-ui' ); ?>" />
+				</p>
+			</form>
+		</div>
+
+		<!-- ── Video Specs Reference ───────────────────────── -->
+		<div class="card" style="max-width:720px;margin-top:16px;">
+			<h2><?php esc_html_e( 'Recommended Video Specs for Trending Cards', 'optical-shop-ui' ); ?></h2>
+			<table class="widefat striped" style="max-width:480px;">
+				<tbody>
+					<tr><th><?php esc_html_e( 'Resolution', 'optical-shop-ui' ); ?></th><td><strong>720 × 960 px</strong></td></tr>
+					<tr><th><?php esc_html_e( 'Aspect Ratio', 'optical-shop-ui' ); ?></th><td>2 : 3 (portrait)</td></tr>
+					<tr><th><?php esc_html_e( 'Format', 'optical-shop-ui' ); ?></th><td>MP4 (H.264)</td></tr>
+					<tr><th><?php esc_html_e( 'Bitrate', 'optical-shop-ui' ); ?></th><td>1.5 – 2.5 Mbps</td></tr>
+					<tr><th><?php esc_html_e( 'Frame Rate', 'optical-shop-ui' ); ?></th><td>24 – 30 fps</td></tr>
+					<tr><th><?php esc_html_e( 'Duration', 'optical-shop-ui' ); ?></th><td>5 – 15 seconds</td></tr>
+					<tr><th><?php esc_html_e( 'File Size', 'optical-shop-ui' ); ?></th><td>Under 3 MB</td></tr>
+				</tbody>
+			</table>
+			<p class="description" style="margin-top:8px;">
+				<?php esc_html_e( 'Videos auto-play muted on hover (desktop) or when 60%+ visible (mobile). After each video finishes it shows the poster and the next video card starts automatically.', 'optical-shop-ui' ); ?>
+			</p>
+		</div>
+
+		<!-- ── Quick Start / Shortcodes ────────────────────── -->
+		<div class="card" style="max-width:720px;margin-top:16px;">
 			<h2><?php esc_html_e( 'Quick Start', 'optical-shop-ui' ); ?></h2>
 			<p><?php esc_html_e( 'Use the sub-menus to manage Shape Tiles and Trending Cards. Then add the shortcodes below to any page or post.', 'optical-shop-ui' ); ?></p>
 
@@ -88,12 +165,12 @@ function osui_dashboard_page() {
 			<code>[optical_trending group="eyeglasses"]</code><br>
 			<code>[optical_trending group="sunglasses"]</code>
 
+			<h3 style="margin-top:1em;"><?php esc_html_e( 'Override Brand Per Shortcode', 'optical-shop-ui' ); ?></h3>
+			<code>[optical_trending group="eyeglasses" brand="YourBrand"]</code>
+			<p class="description"><?php esc_html_e( 'If no brand attribute is set, the saved Brand Name above is used.', 'optical-shop-ui' ); ?></p>
+
 			<h3 style="margin-top:1em;"><?php esc_html_e( 'Gutenberg Blocks', 'optical-shop-ui' ); ?></h3>
 			<p><?php esc_html_e( 'Search for "Optical Shapes" or "Optical Trending" in the block inserter.', 'optical-shop-ui' ); ?></p>
-
-			<h3 style="margin-top:1em;"><?php esc_html_e( 'Trending Card Heading', 'optical-shop-ui' ); ?></h3>
-			<p><?php esc_html_e( 'By default the heading says "#Trending at Lenskart". You can change the brand name with the "brand" attribute:', 'optical-shop-ui' ); ?></p>
-			<code>[optical_trending group="eyeglasses" brand="YourBrand"]</code>
 		</div>
 	</div>
 	<?php
