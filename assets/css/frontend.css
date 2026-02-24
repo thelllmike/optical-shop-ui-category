@@ -1,7 +1,5 @@
 /**
  * Optical Shop UI – Frontend Styles
- *
- * Scoped under .osui-shapes and .osui-trending to avoid collisions.
  */
 
 /* ──────────────────────────────────────────────────────────────
@@ -11,14 +9,72 @@
 .osui-trending {
 	box-sizing: border-box;
 	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
-	max-width: 1320px;
+	width: 100%;
 	margin: 0 auto;
-	padding: 24px 16px;
+	padding: 24px 0;
 }
 
 .osui-shapes *,
 .osui-trending * {
 	box-sizing: border-box;
+}
+
+/* ──────────────────────────────────────────────────────────────
+   GENERIC SLIDER (shared by shapes + trending)
+   ────────────────────────────────────────────────────────────── */
+.osui-slider {
+	position: relative;
+}
+
+/* Arrows – hidden until JS adds --has-overflow */
+.osui-slider__arrow {
+	display: none;
+	position: absolute;
+	top: 50%;
+	transform: translateY(-50%);
+	z-index: 10;
+	width: 44px;
+	height: 44px;
+	border-radius: 50%;
+	border: none;
+	background: rgba(255, 255, 255, 0.92);
+	box-shadow: 0 2px 10px rgba(0, 0, 0, 0.18);
+	cursor: pointer;
+	font-size: 20px;
+	line-height: 1;
+	color: #1a1a4e;
+	transition: background 0.2s, box-shadow 0.2s;
+	align-items: center;
+	justify-content: center;
+}
+
+.osui-slider__arrow:hover {
+	background: #fff;
+	box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+}
+
+.osui-slider__arrow--prev { left: 8px; }
+.osui-slider__arrow--next { right: 8px; }
+
+.osui-slider--has-overflow .osui-slider__arrow {
+	display: flex;
+}
+
+.osui-slider__arrow[disabled] {
+	opacity: 0.3;
+	cursor: default;
+	pointer-events: none;
+}
+
+/* Shared track (scrollable row) */
+.osui-slider__track {
+	scroll-behavior: smooth;
+	-webkit-overflow-scrolling: touch;
+	scrollbar-width: none;
+}
+
+.osui-slider__track::-webkit-scrollbar {
+	display: none;
 }
 
 /* ──────────────────────────────────────────────────────────────
@@ -31,11 +87,19 @@
 	margin: 0 0 20px;
 }
 
+/*
+ * Desktop: 8 tiles in a row, full-width.
+ * Each tile = (100% - 7 gaps) / 8.
+ * gap = 16px → 7 × 16 = 112px.
+ */
 .osui-shapes__grid {
 	display: flex;
-	flex-wrap: wrap;
-	gap: 20px;
-	justify-content: flex-start;
+	gap: 16px;
+	overflow-x: auto;
+	overflow-y: visible;
+	scroll-snap-type: x mandatory;
+	flex-wrap: nowrap;
+	padding: 8px 0 12px; /* top/bottom room for hover lift + shadow */
 }
 
 .osui-shapes__tile {
@@ -45,7 +109,8 @@
 	text-decoration: none;
 	color: #1a1a4e;
 	transition: transform 0.2s ease;
-	width: 130px;
+	flex: 0 0 calc((100% - 112px) / 8);
+	scroll-snap-align: start;
 }
 
 .osui-shapes__tile:hover {
@@ -56,8 +121,8 @@
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	width: 120px;
-	height: 120px;
+	width: 100%;
+	aspect-ratio: 1 / 1;
 	border-radius: 50%;
 	background: #f0f0f5;
 	overflow: hidden;
@@ -80,10 +145,11 @@
 	font-weight: 600;
 	text-align: center;
 	color: #1a1a4e;
+	white-space: nowrap;
 }
 
 /* ──────────────────────────────────────────────────────────────
-   TRENDING CARDS – SLIDER
+   TRENDING CARDS
    ────────────────────────────────────────────────────────────── */
 .osui-trending__heading {
 	font-size: 1.25rem;
@@ -92,35 +158,25 @@
 	margin: 0 0 20px;
 }
 
-/* Slider wrapper (arrows + viewport) */
-.osui-trending__slider {
-	position: relative;
-}
-
-/* Scrollable viewport */
 .osui-trending__row {
 	display: flex;
 	gap: 16px;
 	overflow-x: auto;
 	overflow-y: hidden;
 	scroll-snap-type: x mandatory;
-	scroll-behavior: smooth;
-	-webkit-overflow-scrolling: touch;
-	scrollbar-width: none; /* Firefox */
 	padding-bottom: 4px;
 }
 
-.osui-trending__row::-webkit-scrollbar {
-	display: none; /* Chrome/Safari – hide scrollbar, rely on arrows */
-}
-
-/* Individual card – show 4 per row on desktop with gaps accounted for */
+/*
+ * Desktop: 4 cards fill 100%.
+ * (100% - 3 × 16px) / 4
+ */
 .osui-trending__card {
 	position: relative;
 	display: block;
-	flex: 0 0 calc(25% - 12px); /* 4 cards with 3 gaps of 16px: (3*16)/4 = 12 */
+	flex: 0 0 calc((100% - 48px) / 4);
 	height: 0;
-	padding-bottom: calc((25% - 12px) * 1.35); /* ~2:3 aspect ratio */
+	padding-bottom: calc(((100% - 48px) / 4) * 1.4);
 	border-radius: 16px;
 	overflow: hidden;
 	text-decoration: none;
@@ -140,7 +196,6 @@
 	display: block;
 }
 
-/* Gradient overlay at bottom */
 .osui-trending__overlay {
 	position: absolute;
 	bottom: 0;
@@ -176,133 +231,37 @@
 	gap: 4px;
 }
 
-/* ── Slider arrows ───────────────────────────────────────────── */
-.osui-trending__arrow {
-	display: none; /* hidden by default, shown via JS when > 4 cards */
-	position: absolute;
-	top: 50%;
-	transform: translateY(-50%);
-	z-index: 10;
-	width: 44px;
-	height: 44px;
-	border-radius: 50%;
-	border: none;
-	background: rgba(255, 255, 255, 0.92);
-	box-shadow: 0 2px 10px rgba(0, 0, 0, 0.18);
-	cursor: pointer;
-	font-size: 20px;
-	line-height: 1;
-	color: #1a1a4e;
-	transition: background 0.2s, box-shadow 0.2s;
-	align-items: center;
-	justify-content: center;
-}
-
-.osui-trending__arrow:hover {
-	background: #fff;
-	box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
-}
-
-.osui-trending__arrow--prev {
-	left: -8px;
-}
-
-.osui-trending__arrow--next {
-	right: -8px;
-}
-
-/* Show arrows when slider is active (JS adds this class) */
-.osui-trending__slider--has-overflow .osui-trending__arrow {
-	display: flex;
-}
-
-/* Hide disabled arrow */
-.osui-trending__arrow[disabled] {
-	opacity: 0.3;
-	cursor: default;
-	pointer-events: none;
-}
-
 /* ──────────────────────────────────────────────────────────────
    RESPONSIVE
    ────────────────────────────────────────────────────────────── */
 
-/* Desktop ≥ 768px: show 4 cards, larger shapes */
-@media (min-width: 768px) {
-	.osui-shapes__grid {
-		gap: 28px;
-	}
-
-	.osui-shapes__tile {
-		width: 150px;
-	}
-
-	.osui-shapes__circle {
-		width: 140px;
-		height: 140px;
-	}
-}
-
-/* Large desktop ≥ 1024px */
-@media (min-width: 1024px) {
-	.osui-shapes__circle {
-		width: 160px;
-		height: 160px;
-	}
-
-	.osui-shapes__tile {
-		width: 170px;
-	}
-
-	.osui-trending__slider {
-		padding: 0 24px; /* room for arrows */
-	}
-
-	.osui-trending__arrow--prev {
-		left: -12px;
-	}
-
-	.osui-trending__arrow--next {
-		right: -12px;
-	}
-}
-
-/* Tablet 768–1023: show 3 cards */
+/*
+ * Tablet 768–1023
+ * Shapes: 6 per row. Trending: 3 per row.
+ */
 @media (min-width: 768px) and (max-width: 1023px) {
+	.osui-shapes__tile {
+		flex: 0 0 calc((100% - 80px) / 6); /* 6 tiles, 5 gaps */
+	}
+
 	.osui-trending__card {
-		flex: 0 0 calc(33.333% - 11px);
-		padding-bottom: calc((33.333% - 11px) * 1.35);
+		flex: 0 0 calc((100% - 32px) / 3);
+		padding-bottom: calc(((100% - 32px) / 3) * 1.4);
 	}
 }
 
-/* Mobile < 768px: show ~1.3 cards (scroll-snap) */
+/*
+ * Mobile < 768px
+ * Shapes: 4 per row. Trending: swipe single-card.
+ */
 @media (max-width: 767px) {
-	.osui-trending__card {
-		flex: 0 0 75vw;
-		height: 0;
-		padding-bottom: calc(75vw * 1.35);
-	}
-
-	/* No arrows on mobile – swipe to navigate */
-	.osui-trending__arrow {
-		display: none !important;
-	}
-}
-
-/* Small mobile ≤ 480px */
-@media (max-width: 480px) {
-	.osui-shapes__grid {
-		gap: 12px;
-		justify-content: center;
+	.osui-shapes,
+	.osui-trending {
+		padding: 16px;
 	}
 
 	.osui-shapes__tile {
-		width: 100px;
-	}
-
-	.osui-shapes__circle {
-		width: 90px;
-		height: 90px;
+		flex: 0 0 calc((100% - 48px) / 4); /* 4 tiles, 3 gaps */
 	}
 
 	.osui-shapes__label {
@@ -310,7 +269,29 @@
 	}
 
 	.osui-trending__card {
-		flex: 0 0 80vw;
-		padding-bottom: calc(80vw * 1.35);
+		flex: 0 0 78vw;
+		height: 0;
+		padding-bottom: calc(78vw * 1.4);
+	}
+
+	/* No arrows on mobile — swipe only */
+	.osui-slider__arrow {
+		display: none !important;
+	}
+}
+
+/* Small mobile ≤ 480px: shapes 3 per row */
+@media (max-width: 480px) {
+	.osui-shapes__tile {
+		flex: 0 0 calc((100% - 32px) / 3); /* 3 tiles, 2 gaps */
+	}
+
+	.osui-shapes__label {
+		font-size: 0.72rem;
+	}
+
+	.osui-trending__card {
+		flex: 0 0 82vw;
+		padding-bottom: calc(82vw * 1.4);
 	}
 }

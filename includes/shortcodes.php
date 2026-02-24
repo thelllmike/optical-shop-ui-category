@@ -52,17 +52,21 @@ function osui_shortcode_shapes( $atts ) {
 	?>
 	<section class="osui-shapes osui-shapes--<?php echo esc_attr( $group ); ?>">
 		<h2 class="osui-shapes__heading"><?php echo esc_html( $label ); ?></h2>
-		<div class="osui-shapes__grid">
-			<?php foreach ( $items as $item ) : ?>
-				<a href="<?php echo esc_url( $item['url'] ); ?>" class="osui-shapes__tile">
-					<span class="osui-shapes__circle">
-						<?php if ( $item['image'] ) : ?>
-							<img src="<?php echo esc_url( $item['image'] ); ?>" alt="<?php echo esc_attr( $item['title'] ); ?>" loading="lazy" />
-						<?php endif; ?>
-					</span>
-					<span class="osui-shapes__label"><?php echo esc_html( $item['title'] ); ?></span>
-				</a>
-			<?php endforeach; ?>
+		<div class="osui-shapes__slider osui-slider">
+			<button type="button" class="osui-slider__arrow osui-slider__arrow--prev" aria-label="<?php esc_attr_e( 'Previous', 'optical-shop-ui' ); ?>">&#10094;</button>
+			<div class="osui-shapes__grid osui-slider__track">
+				<?php foreach ( $items as $item ) : ?>
+					<a href="<?php echo esc_url( $item['url'] ); ?>" class="osui-shapes__tile">
+						<span class="osui-shapes__circle">
+							<?php if ( $item['image'] ) : ?>
+								<img src="<?php echo esc_url( $item['image'] ); ?>" alt="<?php echo esc_attr( $item['title'] ); ?>" loading="lazy" />
+							<?php endif; ?>
+						</span>
+						<span class="osui-shapes__label"><?php echo esc_html( $item['title'] ); ?></span>
+					</a>
+				<?php endforeach; ?>
+			</div>
+			<button type="button" class="osui-slider__arrow osui-slider__arrow--next" aria-label="<?php esc_attr_e( 'Next', 'optical-shop-ui' ); ?>">&#10095;</button>
 		</div>
 	</section>
 	<?php
@@ -106,9 +110,9 @@ function osui_shortcode_trending( $atts ) {
 	?>
 	<section class="osui-trending osui-trending--<?php echo esc_attr( $group ); ?>">
 		<h2 class="osui-trending__heading"><?php echo esc_html( $heading ); ?></h2>
-		<div class="osui-trending__slider">
-			<button type="button" class="osui-trending__arrow osui-trending__arrow--prev" aria-label="<?php esc_attr_e( 'Previous', 'optical-shop-ui' ); ?>">&#10094;</button>
-			<div class="osui-trending__row">
+		<div class="osui-trending__slider osui-slider">
+			<button type="button" class="osui-slider__arrow osui-slider__arrow--prev" aria-label="<?php esc_attr_e( 'Previous', 'optical-shop-ui' ); ?>">&#10094;</button>
+			<div class="osui-trending__row osui-slider__track">
 				<?php foreach ( $items as $card ) : ?>
 					<a href="<?php echo esc_url( $card['url'] ); ?>" class="osui-trending__card osui-trending__card--<?php echo esc_attr( $card['type'] ); ?>" data-card-type="<?php echo esc_attr( $card['type'] ); ?>">
 
@@ -141,7 +145,7 @@ function osui_shortcode_trending( $atts ) {
 					</a>
 				<?php endforeach; ?>
 			</div>
-			<button type="button" class="osui-trending__arrow osui-trending__arrow--next" aria-label="<?php esc_attr_e( 'Next', 'optical-shop-ui' ); ?>">&#10095;</button>
+			<button type="button" class="osui-slider__arrow osui-slider__arrow--next" aria-label="<?php esc_attr_e( 'Next', 'optical-shop-ui' ); ?>">&#10095;</button>
 		</div>
 	</section>
 	<?php

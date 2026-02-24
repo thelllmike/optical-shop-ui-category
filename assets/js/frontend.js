@@ -45,56 +45,60 @@
 	}
 
 	/* ══════════════════════════════════════════════════════════
-	   Slider controller (arrows + scroll)
+	   Generic slider controller (works for shapes + trending)
+	   Uses .osui-slider, .osui-slider__track, .osui-slider__arrow
 	   ══════════════════════════════════════════════════════════ */
 
 	function initSliders() {
-		document.querySelectorAll( '.osui-trending__slider' ).forEach( function ( slider ) {
-			var row      = slider.querySelector( '.osui-trending__row' );
-			var prevBtn  = slider.querySelector( '.osui-trending__arrow--prev' );
-			var nextBtn  = slider.querySelector( '.osui-trending__arrow--next' );
-			var allCards = row.querySelectorAll( '.osui-trending__card' );
+		document.querySelectorAll( '.osui-slider' ).forEach( function ( slider ) {
+			var track    = slider.querySelector( '.osui-slider__track' );
+			var prevBtn  = slider.querySelector( '.osui-slider__arrow--prev' );
+			var nextBtn  = slider.querySelector( '.osui-slider__arrow--next' );
 
-			if ( ! row || ! prevBtn || ! nextBtn || allCards.length === 0 ) return;
+			if ( ! track || ! prevBtn || ! nextBtn ) return;
+
+			// Get the first child item of the track (tile or card).
+			var firstItem = track.children[0];
+			if ( ! firstItem ) return;
 
 			function checkOverflow() {
-				var hasOverflow = row.scrollWidth > row.clientWidth + 2; // 2px tolerance
+				var hasOverflow = track.scrollWidth > track.clientWidth + 2;
 				if ( hasOverflow ) {
-					slider.classList.add( 'osui-trending__slider--has-overflow' );
+					slider.classList.add( 'osui-slider--has-overflow' );
 				} else {
-					slider.classList.remove( 'osui-trending__slider--has-overflow' );
+					slider.classList.remove( 'osui-slider--has-overflow' );
 				}
 				updateArrows();
 			}
 
 			function updateArrows() {
-				var scrollLeft = Math.round( row.scrollLeft );
-				var maxScroll  = row.scrollWidth - row.clientWidth;
+				var scrollLeft = Math.round( track.scrollLeft );
+				var maxScroll  = track.scrollWidth - track.clientWidth;
 				prevBtn.disabled = scrollLeft <= 2;
 				nextBtn.disabled = scrollLeft >= maxScroll - 2;
 			}
 
-			function getCardWidth() {
-				var card = allCards[0];
-				if ( ! card ) return 300;
-				var style = window.getComputedStyle( row );
+			function getItemWidth() {
+				var item = track.children[0];
+				if ( ! item ) return 200;
+				var style = window.getComputedStyle( track );
 				var gap   = parseInt( style.gap || style.columnGap, 10 ) || 16;
-				return card.offsetWidth + gap;
+				return item.offsetWidth + gap;
 			}
 
 			prevBtn.addEventListener( 'click', function ( e ) {
 				e.preventDefault();
 				e.stopPropagation();
-				row.scrollBy( { left: -getCardWidth(), behavior: 'smooth' } );
+				track.scrollBy( { left: -getItemWidth(), behavior: 'smooth' } );
 			} );
 
 			nextBtn.addEventListener( 'click', function ( e ) {
 				e.preventDefault();
 				e.stopPropagation();
-				row.scrollBy( { left: getCardWidth(), behavior: 'smooth' } );
+				track.scrollBy( { left: getItemWidth(), behavior: 'smooth' } );
 			} );
 
-			row.addEventListener( 'scroll', updateArrows );
+			track.addEventListener( 'scroll', updateArrows );
 			window.addEventListener( 'resize', checkOverflow );
 			checkOverflow();
 		} );
